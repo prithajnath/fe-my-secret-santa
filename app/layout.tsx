@@ -2,7 +2,7 @@ import { Inter, Fraunces } from "next/font/google"
 import "./globals.css"
 import type React from "react"
 import Link from "next/link"
-import { Menu, Github, Bug } from "lucide-react"
+import { Menu, Bug } from "lucide-react"
 import { getUser } from "@/lib/auth"
 
 const inter = Inter({
@@ -66,15 +66,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <Bug className="h-4 w-4" />
                   Report Issue
                 </Link>
-                <a
-                  href="https://github.com/mysecretsanta"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-600 hover:text-black transition-colors"
-                  aria-label="GitHub"
-                >
-                  <Github className="h-5 w-5" />
-                </a>
               </div>
             </div>
           </div>
