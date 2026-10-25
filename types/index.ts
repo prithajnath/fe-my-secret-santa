@@ -22,7 +22,11 @@ export interface User {
 
 export interface UserProfile extends User {
   hint?: string
+  // Composed display string of address_components (or legacy free text)
   address?: string
+  address_components?: AddressComponents | null
+  // True once the backend has coordinates for the address
+  address_verified?: boolean
   created_at: string
 }
 
@@ -34,6 +38,36 @@ export interface PublicUserProfile {
   avatar_url?: string
   hint?: string
   address?: string
+  address_components?: AddressComponents | null
+}
+
+// ==================== Address Types ====================
+export interface AddressComponents {
+  address_line1: string
+  address_line2?: string | null
+  city: string
+  // 2-letter US state code
+  state: string
+  zip: string
+}
+
+// What PUT /users/me accepts. Coordinates come from a picked suggestion; omit them for manual
+// entry and the backend geocodes the address later.
+export interface AddressInput extends AddressComponents {
+  lat?: number
+  lon?: number
+}
+
+export interface AddressSuggestion {
+  place_id: string
+  label: string
+  address_line1: string
+  city: string
+  state: string
+  zip: string
+  lat: number
+  lon: number
+  result_type: string
 }
 
 // ==================== Auth Types ====================

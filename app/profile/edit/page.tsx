@@ -33,6 +33,8 @@ export default async function EditProfilePage() {
             username: user.username,
             hint: user.hint || "",
             address: user.address || "",
+            addressComponents: user.address_components ?? null,
+            addressVerified: user.address_verified ?? false,
             avatarUrl: user.avatar_url || "",
           }}
         />

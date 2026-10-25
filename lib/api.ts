@@ -13,6 +13,8 @@ import type {
   RevealData,
   IssueResponse,
   InviteAcceptResponse,
+  AddressInput,
+  AddressSuggestion,
 } from "@/types"
 import { apiErrorMessage } from "@/lib/utils"
 import { isExpiringSoon } from "@/lib/jwt"
@@ -259,7 +261,8 @@ export const usersApi = {
     first_name?: string
     last_name?: string
     hint?: string
-    address?: string
+    // null clears the address
+    address_components?: AddressInput | null
   }): Promise<UserProfile> {
     const response = await baseFetch<UserProfile>("/api/users/me", {
       method: "PUT",
@@ -270,6 +273,18 @@ export const usersApi = {
 
   async getUser(username: string): Promise<PublicUserProfile> {
     const response = await baseFetch<PublicUserProfile>(`/api/users/${username}`)
+    return response.data
+  },
+}
+
+// ==================== Geo API ====================
+export const geoApi = {
+  // US address suggestions; q must be at least 3 characters. Pass a signal to cancel stale lookups.
+  async autocomplete(q: string, signal?: AbortSignal): Promise<AddressSuggestion[]> {
+    const response = await baseFetch<AddressSuggestion[]>(`/api/geo/autocomplete?q=${encodeURIComponent(q)}`, {
+      method: "GET",
+      signal,
+    })
     return response.data
   },
 }

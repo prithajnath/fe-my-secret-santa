@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Edit, Gift, MapPin, Lightbulb } from "lucide-react"
+import { Edit, Gift, MapPin, Lightbulb, CheckCircle2 } from "lucide-react"
 import Link from "next/link"
 import { LogoutButton } from "./logout-button"
 
@@ -67,6 +67,20 @@ export default async function ProfilePage() {
                   <h3 className="font-serif text-xl">Shipping Address</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed">{user.address}</p>
+                {user.address_verified ? (
+                  <p className="flex items-center gap-1.5 text-xs text-green-700">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Verified address
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-500">
+                    Not verified.{" "}
+                    <Link href="/profile/edit" className="underline hover:text-black">
+                      Re-select your address from suggestions
+                    </Link>{" "}
+                    to verify it.
+                  </p>
+                )}
               </div>
             )}
 

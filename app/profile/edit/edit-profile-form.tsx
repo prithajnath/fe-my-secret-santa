@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { AlertCircle, Check } from "lucide-react"
 import { usersApi } from "@/lib/api"
+import AddressFields, { EMPTY_ADDRESS, type AddressFormValue } from "@/components/address-fields"
+import type { AddressComponents, AddressInput } from "@/types"
 
 interface ProfileData {
   firstName: string
@@ -17,9 +19,40 @@ interface ProfileData {
   email: string
   username: string
   hint: string
+  // Composed display string; for legacy accounts it's free text with no components
   address: string
+  addressComponents: AddressComponents | null
+  addressVerified: boolean
   avatarUrl: string
 }
+
+function toFormValue(components: AddressComponents | null): AddressFormValue {
+  if (!components) return EMPTY_ADDRESS
+  return {
+    line1: components.address_line1,
+    line2: components.address_line2 ?? "",
+    city: components.city,
+    state: components.state,
+    zip: components.zip,
+    coords: null,
+  }
+}
+
+// null clears the address; coordinates are only sent for a picked suggestion
+function toAddressInput(value: AddressFormValue): AddressInput | null {
+  if (!value.line1.trim() && !value.city.trim() && !value.state && !value.zip.trim()) return null
+  return {
+    address_line1: value.line1.trim(),
+    address_line2: value.line2.trim() || null,
+    city: value.city.trim(),
+    state: value.state,
+    zip: value.zip.trim(),
+    ...(value.coords && { lat: value.coords.lat, lon: value.coords.lon }),
+  }
+}
+
+// Backend validation errors that belong next to the address fields rather than in the banner
+const ADDRESS_ERROR = /address|city|state|zip/i
 
 export default function EditProfileForm({ profile }: { profile: ProfileData }) {
   const router = useRouter()
@@ -27,8 +60,12 @@ export default function EditProfileForm({ profile }: { profile: ProfileData }) {
     firstName: profile.firstName,
     lastName: profile.lastName,
     hint: profile.hint,
-    address: profile.address,
   })
+  const [address, setAddress] = useState<AddressFormValue>(() => toFormValue(profile.addressComponents))
+  // Only send address_components when the user touched the address, so saving names or hints
+  // never rewrites (or un-verifies) a stored address
+  const [addressDirty, setAddressDirty] = useState(false)
+  const [addressError, setAddressError] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
@@ -45,6 +82,7 @@ export default function EditProfileForm({ profile }: { profile: ProfileData }) {
     e.preventDefault()
     setLoading(true)
     setError("")
+    setAddressError("")
     setSuccess(false)
 
     try {
@@ -52,7 +90,7 @@ export default function EditProfileForm({ profile }: { profile: ProfileData }) {
         first_name: formData.firstName,
         last_name: formData.lastName,
         hint: formData.hint,
-        address: formData.address,
+        ...(addressDirty && { address_components: toAddressInput(address) }),
       })
       setSuccess(true)
       setTimeout(() => {
@@ -60,7 +98,9 @@ export default function EditProfileForm({ profile }: { profile: ProfileData }) {
         router.refresh()
       }, 1000)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update profile")
+      const message = err instanceof Error ? err.message : "Failed to update profile"
+      if (addressDirty && ADDRESS_ERROR.test(message)) setAddressError(message)
+      else setError(message)
     } finally {
       setLoading(false)
     }
@@ -156,20 +196,27 @@ export default function EditProfileForm({ profile }: { profile: ProfileData }) {
         <p className="text-xs text-gray-500">Help your Secret Santa find the perfect gift by sharing your interests</p>
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="address" className="block text-sm font-medium">
-          Shipping Address
-        </label>
-        <Textarea
-          id="address"
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-          placeholder="123 Main St, City, State 12345"
-          rows={2}
-        />
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-medium">Shipping Address</legend>
         <p className="text-xs text-gray-500">Your address is only visible to your Secret Santa</p>
-      </div>
+        {!profile.addressComponents && profile.address && !addressDirty && (
+          <p className="text-sm text-gray-700 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+            Saved address: <span className="font-medium">{profile.address}</span>
+            <br />
+            <span className="text-gray-600">Re-enter it below using the suggestions to verify it.</span>
+          </p>
+        )}
+        <AddressFields
+          value={address}
+          onChange={(value) => {
+            setAddress(value)
+            setAddressDirty(true)
+            setAddressError("")
+          }}
+          verified={addressDirty ? address.coords !== null : profile.addressVerified}
+          error={addressError}
+        />
+      </fieldset>
 
       <div className="flex gap-4">
         <Button type="submit" className="flex-1" disabled={loading}>
