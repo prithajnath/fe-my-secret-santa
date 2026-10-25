@@ -37,6 +37,10 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  // Some crawlers and tools fetch /favicon.ico directly instead of reading <link rel="icon">
+  async rewrites() {
+    return [{ source: "/favicon.ico", destination: "/icon" }]
+  },
   async headers() {
     return [
       {
