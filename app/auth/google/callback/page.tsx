@@ -16,6 +16,10 @@ export default function GoogleCallbackPage() {
   const exchanged = useRef(false)
 
   useEffect(() => {
+    // Only the first run handles the callback. Google codes are single-use (StrictMode runs effects
+    // twice in dev), and stripping ?code= below re-runs this effect with the code already gone.
+    if (exchanged.current) return
+
     const code = searchParams.get("code")
     const errorParam = searchParams.get("error")
 
@@ -29,8 +33,6 @@ export default function GoogleCallbackPage() {
       return
     }
 
-    // Google codes are single-use; StrictMode's double effect in dev would otherwise exchange it twice
-    if (exchanged.current) return
     exchanged.current = true
     // Keep the code out of the address bar and history
     window.history.replaceState(null, "", window.location.pathname)
