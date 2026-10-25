@@ -35,6 +35,8 @@ export default function Home() {
               alt="Artistic Santa Claus"
               width={400}
               height={500}
+              // Above the fold and the page's largest element, so don't lazy-load it
+              loading="eager"
               className="w-full h-auto rounded-lg shadow-md"
             />
           </div>
