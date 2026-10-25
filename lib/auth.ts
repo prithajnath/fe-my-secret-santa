@@ -3,7 +3,7 @@ import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import type { UserProfile } from "@/types"
 import { serverFetch } from "./server-fetch"
-import { apiErrorMessage } from "./utils"
+import { apiErrorMessage, safeNextPath } from "./utils"
 
 const API_BASE = process.env.API_BASE_URL || "https://localhost:9100"
 
@@ -73,6 +73,14 @@ export async function refreshServerToken(): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+// Where to send a logged-out visitor so they land back on this page after signing in
+export async function loginPath(): Promise<string> {
+  const url = new URL((await headers()).get("x-pathname") ?? "/", "http://localhost")
+  url.searchParams.delete(AUTH_MARKER_PARAM)
+  const next = safeNextPath(url.pathname + url.search)
+  return next && next !== "/" ? `/login?next=${encodeURIComponent(next)}` : "/login"
 }
 
 type MeResult = { status: "ok"; user: UserProfile } | { status: "unauthorized" } | { status: "error" }

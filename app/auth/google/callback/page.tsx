@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { authApi } from "@/lib/api"
 import { setAuthCookies } from "@/app/actions"
+import { AUTH_NEXT_KEY, safeNextPath } from "@/lib/utils"
 
 export default function GoogleCallbackPage() {
   const searchParams = useSearchParams()
@@ -40,8 +41,16 @@ export default function GoogleCallbackPage() {
         const response = await authApi.handleGoogleCallback(code, redirectUri)
         await setAuthCookies(response.access_token, response.refresh_token)
 
+        let next: string | null = null
+        try {
+          next = safeNextPath(sessionStorage.getItem(AUTH_NEXT_KEY))
+          sessionStorage.removeItem(AUTH_NEXT_KEY)
+        } catch {
+          // Storage unavailable; fall back to the default destination
+        }
+
         // Full page load so the layout re-renders with the new session in a single request
-        window.location.replace(response.user.is_new_user ? "/profile/edit?welcome=true" : "/groups")
+        window.location.replace(next ?? (response.user.is_new_user ? "/profile/edit?welcome=true" : "/groups"))
       } catch (err) {
         setError(err instanceof Error ? err.message : "Authentication failed")
       }

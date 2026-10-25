@@ -1,4 +1,4 @@
-import { getUser } from "@/lib/auth"
+import { getUser, loginPath } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
@@ -9,7 +9,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
   const { username } = await params
 
   if (!user) {
-    redirect("/login")
+    redirect(await loginPath())
   }
 
   if (decodeURIComponent(username) === user.username) {

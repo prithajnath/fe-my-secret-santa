@@ -1,4 +1,4 @@
-import { getUser } from "@/lib/auth"
+import { getUser, loginPath } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ export default async function GroupsPage() {
   const user = await getUser()
 
   if (!user) {
-    redirect("/login")
+    redirect(await loginPath())
   }
 
   return (

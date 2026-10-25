@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card"
 import { AlertCircle, Eye, EyeOff, Check } from "lucide-react"
 import { authApi } from "@/lib/api"
 import { setAuthCookies } from "@/app/actions"
+import { nextPathFromLocation } from "@/lib/utils"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -22,6 +23,12 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  // Where to go after signing up, e.g. an invite link from an email
+  const [nextPath, setNextPath] = useState<string | null>(null)
+
+  useEffect(() => {
+    setNextPath(nextPathFromLocation())
+  }, [])
 
   const passwordRequirements = [
     { label: "At least 8 characters", met: formData.password.length >= 8 },
@@ -59,7 +66,7 @@ export default function RegisterPage() {
       })
       await setAuthCookies(response.access_token, response.refresh_token)
       // Full page load so the layout re-renders with the new session in a single request
-      window.location.assign("/groups")
+      window.location.assign(nextPath ?? "/groups")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed. Please try again.")
     } finally {
@@ -212,7 +219,10 @@ export default function RegisterPage() {
 
       <p className="text-sm text-gray-600 text-center">
         Already have an account?{" "}
-        <Link href="/login" className="text-black font-medium hover:underline">
+        <Link
+          href={nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : "/login"}
+          className="text-black font-medium hover:underline"
+        >
           Sign in
         </Link>
       </p>

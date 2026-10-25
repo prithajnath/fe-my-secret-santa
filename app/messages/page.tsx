@@ -1,4 +1,4 @@
-import { getUser } from "@/lib/auth"
+import { getUser, loginPath } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { MessageSquare } from "lucide-react"
@@ -8,7 +8,7 @@ export default async function MessagesPage() {
   const user = await getUser()
 
   if (!user) {
-    redirect("/login")
+    redirect(await loginPath())
   }
 
   return (

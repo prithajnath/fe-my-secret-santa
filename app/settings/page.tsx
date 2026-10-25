@@ -1,4 +1,4 @@
-import { getUser } from "@/lib/auth"
+import { getUser, loginPath } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import Link from "next/link"
@@ -9,7 +9,7 @@ export default async function SettingsPage() {
   const user = await getUser()
 
   if (!user) {
-    redirect("/login")
+    redirect(await loginPath())
   }
 
   return (

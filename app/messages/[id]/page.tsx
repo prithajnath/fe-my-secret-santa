@@ -1,4 +1,4 @@
-import { getUser } from "@/lib/auth"
+import { getUser, loginPath } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
@@ -18,7 +18,7 @@ export default async function ConversationPage({
   const { role } = await searchParams
 
   if (!user) {
-    redirect("/login")
+    redirect(await loginPath())
   }
 
   const isGiver = role === "giver"

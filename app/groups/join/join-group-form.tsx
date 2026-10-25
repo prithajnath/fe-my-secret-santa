@@ -9,9 +9,10 @@ import { Card } from "@/components/ui/card"
 import { AlertCircle, Check } from "lucide-react"
 import { invitesApi } from "@/lib/api"
 
-export default function JoinGroupForm() {
+// initialCode comes from invite links (/groups/join?code=GROUP-XXXX)
+export default function JoinGroupForm({ initialCode }: { initialCode?: string }) {
   const router = useRouter()
-  const [code, setCode] = useState("")
+  const [code, setCode] = useState(initialCode ?? "")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")

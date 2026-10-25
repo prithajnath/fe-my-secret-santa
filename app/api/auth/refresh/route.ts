@@ -1,12 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { AUTH_MARKER_PARAM, clearServerTokens, refreshServerToken } from "@/lib/auth"
+import { safeNextPath } from "@/lib/utils"
 
 // getUser() redirects here when the access token is missing or rejected.
 // Refresh once; on failure, end the session instead of retrying.
 export async function GET(request: NextRequest) {
-  const next = request.nextUrl.searchParams.get("next") ?? "/"
-  // Only allow same-site paths, not "//evil.com" or absolute URLs
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/"
+  const safeNext = safeNextPath(request.nextUrl.searchParams.get("next")) ?? "/"
 
   if (await refreshServerToken()) {
     const target = new URL(safeNext, request.url)
@@ -15,5 +14,7 @@ export async function GET(request: NextRequest) {
   }
 
   await clearServerTokens()
-  return NextResponse.redirect(new URL(`/login?${AUTH_MARKER_PARAM}=expired`, request.url))
+  const login = new URL(`/login?${AUTH_MARKER_PARAM}=expired`, request.url)
+  if (safeNext !== "/") login.searchParams.set("next", safeNext)
+  return NextResponse.redirect(login)
 }

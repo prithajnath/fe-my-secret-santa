@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card"
 import { AlertCircle, Eye, EyeOff } from "lucide-react"
 import { authApi } from "@/lib/api"
 import { setAuthCookies } from "@/app/actions"
+import { AUTH_NEXT_KEY, nextPathFromLocation } from "@/lib/utils"
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
@@ -16,6 +17,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  // Where to go after signing in, e.g. an invite link from an email
+  const [nextPath, setNextPath] = useState<string | null>(null)
+
+  useEffect(() => {
+    setNextPath(nextPathFromLocation())
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,7 +33,7 @@ export default function LoginPage() {
       const response = await authApi.login(username, password)
       await setAuthCookies(response.access_token, response.refresh_token)
       // Full page load so the layout re-renders with the new session in a single request
-      window.location.assign("/groups")
+      window.location.assign(nextPath ?? "/groups")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid username or password")
     } finally {
@@ -38,6 +45,13 @@ export default function LoginPage() {
     try {
       const redirectUri = `${window.location.origin}/auth/google/callback`
       const { oauth_url } = await authApi.getGoogleOAuthUrl(redirectUri)
+      // Google's redirect drops our query string, so carry ?next= across in sessionStorage
+      try {
+        if (nextPath) sessionStorage.setItem(AUTH_NEXT_KEY, nextPath)
+        else sessionStorage.removeItem(AUTH_NEXT_KEY)
+      } catch {
+        // Storage unavailable; the user lands on the default page instead
+      }
       window.location.href = oauth_url
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to initialize Google login")
@@ -145,7 +159,10 @@ export default function LoginPage() {
 
       <p className="text-sm text-gray-600 text-center">
         Don&apos;t have an account?{" "}
-        <Link href="/register" className="text-black font-medium hover:underline">
+        <Link
+          href={nextPath ? `/register?next=${encodeURIComponent(nextPath)}` : "/register"}
+          className="text-black font-medium hover:underline"
+        >
           Sign up
         </Link>
       </p>

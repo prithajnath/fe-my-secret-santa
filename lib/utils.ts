@@ -14,3 +14,18 @@ export function apiErrorMessage(body: unknown, fallback: string): string {
   if (typeof b?.message === "string") return b.message
   return fallback
 }
+
+// Post-login destination from ?next=. Only same-site paths, so it can't be used as an open redirect.
+export function safeNextPath(next: string | null | undefined): string | null {
+  if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return null
+  if (next === "/login" || next.startsWith("/login?")) return null
+  return next
+}
+
+// Reads ?next= from the current URL (client only)
+export function nextPathFromLocation(): string | null {
+  return safeNextPath(new URLSearchParams(window.location.search).get("next"))
+}
+
+// sessionStorage key carrying ?next= across the Google OAuth round trip
+export const AUTH_NEXT_KEY = "auth_next"

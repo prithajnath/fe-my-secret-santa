@@ -22,6 +22,21 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Routes from the old Flask UI, still linked from emails that were already sent.
+  // Query strings (e.g. ?code=) carry over to the destination automatically.
+  async redirects() {
+    return [
+      { source: "/santa", destination: "/messages", permanent: false },
+      { source: "/signup", destination: "/register", permanent: false },
+      { source: "/invite", destination: "/groups/join", permanent: false },
+      {
+        source: "/groups",
+        has: [{ type: "query", key: "group_id", value: "(?<groupId>\\d+)" }],
+        destination: "/messages/group/:groupId",
+        permanent: false,
+      },
+    ]
+  },
   async headers() {
     return [
       {
