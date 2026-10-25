@@ -1,6 +1,7 @@
 import { Inter, Fraunces } from "next/font/google"
 import "./globals.css"
 import type React from "react"
+import type { Metadata } from "next"
 import Link from "next/link"
 import { Bug } from "lucide-react"
 import { getUser } from "@/lib/auth"
@@ -19,9 +20,26 @@ const fraunces = Fraunces({
   axes: ["SOFT", "WONK", "opsz"],
 })
 
-export const metadata = {
+const DESCRIPTION = "Organize your Secret Santa gift exchange with private groups and anonymous messaging"
+
+export const metadata: Metadata = {
+  // Link previews need absolute image URLs; previews always point at the live site
+  metadataBase: new URL("https://app.mysecretsanta.io"),
   title: "My Secret Santa",
-  description: "Organize your Secret Santa gift exchange with private groups and anonymous messaging",
+  description: DESCRIPTION,
+  // og:image / twitter:image come from app/opengraph-image.tsx and app/twitter-image.tsx
+  openGraph: {
+    type: "website",
+    siteName: "My Secret Santa",
+    title: "My Secret Santa",
+    description: DESCRIPTION,
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "My Secret Santa",
+    description: DESCRIPTION,
+  },
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
