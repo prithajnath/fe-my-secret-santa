@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ChevronRight, Lock, MessageCircle, Users, Github } from "lucide-react"
+import { ChevronRight, Lock, MessageCircle, Users } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-grow space-y-12 md:space-y-16">
+    <div>
+      <div className="space-y-12 md:space-y-16">
         <section className="space-y-8 md:space-y-0 flex flex-col md:flex-row md:items-center">
           <div className="md:w-2/3 space-y-6">
             <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-tight md:leading-[1.1] max-w-2xl font-light">
@@ -66,20 +66,6 @@ export default function Home() {
           </Card>
         </section>
       </div>
-
-      <footer className="mt-12 md:mt-16 py-6 md:py-8 border-t border-black/5">
-        <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <p className="text-sm text-gray-700 text-center md:text-left">&copy; {new Date().getFullYear()} xerocopy LLC. All rights reserved.</p>
-          <a
-            href="https://github.com/yourusername/my-secret-santa"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-700 hover:text-black transition-colors duration-300"
-          >
-            <Github className="h-6 w-6" />
-          </a>
-        </div>
-      </footer>
     </div>
   )
 }
