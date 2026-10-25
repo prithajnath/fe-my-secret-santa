@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -51,8 +52,8 @@ export default function SiteNav({ user }: { user: NavUser | null }) {
   return (
     <nav className="border-b border-black/5">
       <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/" className="font-serif text-2xl tracking-tight">
-          My Secret Santa
+        <Link href="/" aria-label="My Secret Santa, home" className="flex-shrink-0">
+          <Image src="/logo.png" alt="My Secret Santa" width={180} height={44} priority className="h-9 md:h-11 w-auto" />
         </Link>
         <div className="hidden md:flex items-center gap-8">
           <ThemeToggle className="-mx-4" />
