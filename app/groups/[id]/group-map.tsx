@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useTheme } from "next-themes"
 import Link from "next/link"
 import type { Map as MapLibreMap, Marker } from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
@@ -12,10 +11,8 @@ import type { GroupMap as GroupMapData, MapMember } from "@/types"
 import { flySanta, prefersReducedMotion, type FlightStop } from "./santa-flight"
 
 // Free, keyless vector tiles; OpenStreetMap's own tile servers don't allow app traffic
-const MAP_STYLES = {
-  light: "https://tiles.openfreemap.org/styles/liberty",
-  dark: "https://tiles.openfreemap.org/styles/dark",
-}
+// Natural map colors in both site themes
+const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty"
 const MAPLIBRE_WORKER_URL = "/vendor/maplibre-gl-worker.mjs"
 const US_CENTER: [number, number] = [-98.5, 39.8]
 // Approximate pins sit at the member's nearest major city, so never zoom in to street level
@@ -140,9 +137,6 @@ export default function GroupMap({ groupId }: { groupId: number }) {
   const [flying, setFlying] = useState(false)
   const [canFly, setCanFly] = useState(false)
   const stops = useRef<FlightStop[]>([])
-  const { resolvedTheme } = useTheme()
-  const mapStyle = resolvedTheme === "dark" ? MAP_STYLES.dark : MAP_STYLES.light
-  const appliedStyle = useRef(mapStyle)
 
   const load = async () => {
     try {
@@ -170,7 +164,7 @@ export default function GroupMap({ groupId }: { groupId: number }) {
       maplibregl.setWorkerUrl(MAPLIBRE_WORKER_URL)
       const instance = new maplibregl.Map({
         container: container.current,
-        style: mapStyle,
+        style: MAP_STYLE,
         center: US_CENTER,
         zoom: 3,
         // Approximate pins are GeoNames city points; its CC BY 4.0 license requires credit
@@ -182,7 +176,6 @@ export default function GroupMap({ groupId }: { groupId: number }) {
       instance.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right")
       instance.on("load", () => !cancelled && setMapReady(true))
       map.current = instance
-      appliedStyle.current = mapStyle
     })
     return () => {
       cancelled = true
@@ -192,13 +185,6 @@ export default function GroupMap({ groupId }: { groupId: number }) {
       setMapReady(false)
     }
   }, [loading])
-
-  // Follow the site theme. Pins are DOM markers, so they survive the style swap.
-  useEffect(() => {
-    if (!map.current || appliedStyle.current === mapStyle) return
-    appliedStyle.current = mapStyle
-    map.current.setStyle(mapStyle)
-  }, [mapStyle])
 
   // Draw pins whenever the data changes
   useEffect(() => {
@@ -353,7 +339,7 @@ export default function GroupMap({ groupId }: { groupId: number }) {
 
           {error && <p className="text-sm text-red-700">{error}</p>}
 
-          <div className="relative">
+          <div className="relative light-palette">
             <div ref={container} className="h-[360px] w-full overflow-hidden rounded-lg border border-black/5" />
             {canFly && (
               <button
