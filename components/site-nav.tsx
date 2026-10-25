@@ -4,8 +4,15 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-export default function SiteNav({ isLoggedIn }: { isLoggedIn: boolean }) {
+export interface NavUser {
+  first_name: string
+  last_name: string
+  avatar_url?: string
+}
+
+export default function SiteNav({ user }: { user: NavUser | null }) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
 
@@ -13,8 +20,18 @@ export default function SiteNav({ isLoggedIn }: { isLoggedIn: boolean }) {
     { href: "/groups", label: "Groups" },
     { href: "/messages", label: "Messages" },
     { href: "/profile", label: "Profile" },
-    ...(isLoggedIn ? [] : [{ href: "/login", label: "Login" }]),
+    ...(user ? [] : [{ href: "/login", label: "Login" }]),
   ]
+
+  const avatar = (size: string) =>
+    user && (
+      <Avatar className={size}>
+        <AvatarImage src={user.avatar_url} alt="" />
+        <AvatarFallback className="text-xs">
+          {`${user.first_name[0] ?? ""}${user.last_name[0] ?? ""}`.toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+    )
 
   // Close the mobile menu after navigating
   useEffect(() => {
@@ -36,12 +53,25 @@ export default function SiteNav({ isLoggedIn }: { isLoggedIn: boolean }) {
         <Link href="/" className="font-serif text-2xl tracking-tight">
           My Secret Santa
         </Link>
-        <div className="hidden md:flex gap-8">
-          {links.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-gray-600 transition-colors">
-              {link.label}
-            </Link>
-          ))}
+        <div className="hidden md:flex items-center gap-8">
+          {links.map((link) =>
+            // Logged in, the profile link is the user's avatar
+            link.href === "/profile" && user ? (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-label="Profile"
+                title={`${user.first_name} ${user.last_name}`}
+                className="rounded-full ring-offset-2 hover:ring-2 hover:ring-black/20 transition-shadow"
+              >
+                {avatar("h-9 w-9")}
+              </Link>
+            ) : (
+              <Link key={link.href} href={link.href} className="hover:text-gray-600 transition-colors">
+                {link.label}
+              </Link>
+            ),
+          )}
         </div>
         <button
           type="button"
@@ -63,10 +93,11 @@ export default function SiteNav({ isLoggedIn }: { isLoggedIn: boolean }) {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className={`py-3 text-lg hover:text-gray-600 transition-colors ${
+                className={`py-3 text-lg hover:text-gray-600 transition-colors flex items-center gap-3 ${
                   pathname.startsWith(link.href) ? "font-medium" : ""
                 }`}
               >
+                {link.href === "/profile" && avatar("h-7 w-7")}
                 {link.label}
               </Link>
             ))}

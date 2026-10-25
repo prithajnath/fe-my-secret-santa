@@ -29,7 +29,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body className={`${inter.variable} ${fraunces.variable} font-sans min-h-screen flex flex-col`}>
-        <SiteNav isLoggedIn={!!user} />
+        <SiteNav
+          user={user && { first_name: user.first_name, last_name: user.last_name, avatar_url: user.avatar_url }}
+        />
 
         <main className="flex-1 max-w-5xl mx-auto px-4 py-8 w-full">{children}</main>
 
