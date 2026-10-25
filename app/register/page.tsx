@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card"
 import { AlertCircle, Eye, EyeOff, Check } from "lucide-react"
 import { authApi } from "@/lib/api"
 import { setAuthCookies } from "@/app/actions"
+import GoogleAuthButton from "@/components/google-auth-button"
 import { nextPathFromLocation } from "@/lib/utils"
 
 export default function RegisterPage() {
@@ -216,6 +217,8 @@ export default function RegisterPage() {
           {loading ? "Creating account..." : "Create account"}
         </Button>
       </form>
+
+      <GoogleAuthButton nextPath={nextPath} onError={setError} />
 
       <p className="text-sm text-gray-600 text-center">
         Already have an account?{" "}
