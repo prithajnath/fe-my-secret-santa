@@ -57,7 +57,7 @@ function LandingPage() {
               height={500}
               // Above the fold and the page's largest element, so don't lazy-load it
               loading="eager"
-              className="w-full h-auto rounded-lg shadow-md"
+              className="w-full h-auto rounded-lg shadow-md dark:brightness-[0.85]"
             />
           </div>
         </section>

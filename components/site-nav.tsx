@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import ThemeToggle from "@/components/theme-toggle"
 
 export interface NavUser {
   first_name: string
@@ -54,6 +55,7 @@ export default function SiteNav({ user }: { user: NavUser | null }) {
           My Secret Santa
         </Link>
         <div className="hidden md:flex items-center gap-8">
+          <ThemeToggle className="-mx-4" />
           {links.map((link) =>
             // Logged in, the profile link is the user's avatar
             link.href === "/profile" && user ? (
@@ -73,16 +75,19 @@ export default function SiteNav({ user }: { user: NavUser | null }) {
             ),
           )}
         </div>
-        <button
-          type="button"
-          className="md:hidden p-2 -mr-2"
-          onClick={() => setOpen((prev) => !prev)}
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          aria-label={open ? "Close menu" : "Open menu"}
-        >
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="md:hidden flex items-center gap-1 -mr-2">
+          <ThemeToggle />
+          <button
+            type="button"
+            className="p-2"
+            onClick={() => setOpen((prev) => !prev)}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-label={open ? "Close menu" : "Open menu"}
+          >
+            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {open && (

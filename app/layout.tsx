@@ -6,6 +6,7 @@ import { Bug } from "lucide-react"
 import { getUser } from "@/lib/auth"
 import SiteNav from "@/components/site-nav"
 import { Analytics } from "@vercel/analytics/next"
+import { ThemeProvider } from "next-themes"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,33 +28,36 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   
   const user = await getUser();
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${fraunces.variable} font-sans min-h-screen flex flex-col`}>
-        <SiteNav
-          user={user && { first_name: user.first_name, last_name: user.last_name, avatar_url: user.avatar_url }}
-        />
+        {/* Follows the OS setting by default; the nav toggle overrides it (stored in localStorage) */}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <SiteNav
+            user={user && { first_name: user.first_name, last_name: user.last_name, avatar_url: user.avatar_url }}
+          />
 
-        <main className="flex-1 max-w-5xl mx-auto px-4 py-8 w-full">{children}</main>
+          <main className="flex-1 max-w-5xl mx-auto px-4 py-8 w-full">{children}</main>
 
-        <footer className="border-t border-black/5 mt-auto">
-          <div className="max-w-5xl mx-auto px-4 py-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-gray-600">
-                &copy; {new Date().getFullYear()} xerocopy LLC. All rights reserved.
-              </p>
-              <div className="flex items-center gap-6">
-                <Link
-                  href="/report"
-                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-black transition-colors"
-                >
-                  <Bug className="h-4 w-4" />
-                  Report Issue
-                </Link>
+          <footer className="border-t border-black/5 mt-auto">
+            <div className="max-w-5xl mx-auto px-4 py-6">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <p className="text-sm text-gray-600">
+                  &copy; {new Date().getFullYear()} xerocopy LLC. All rights reserved.
+                </p>
+                <div className="flex items-center gap-6">
+                  <Link
+                    href="/report"
+                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-black transition-colors"
+                  >
+                    <Bug className="h-4 w-4" />
+                    Report Issue
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        </footer>
-        <Analytics />
+          </footer>
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   )
