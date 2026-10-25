@@ -2,8 +2,9 @@ import { Inter, Fraunces } from "next/font/google"
 import "./globals.css"
 import type React from "react"
 import Link from "next/link"
-import { Menu, Bug } from "lucide-react"
+import { Bug } from "lucide-react"
 import { getUser } from "@/lib/auth"
+import SiteNav from "@/components/site-nav"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,28 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body className={`${inter.variable} ${fraunces.variable} font-sans min-h-screen flex flex-col`}>
-        <nav className="border-b border-black/5">
-          <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link href="/" className="font-serif text-2xl tracking-tight">
-              My Secret Santa
-            </Link>
-            <div className="hidden md:flex gap-8">
-              <Link href="/groups" className="hover:text-gray-600 transition-colors">
-                Groups
-              </Link>
-              <Link href="/messages" className="hover:text-gray-600 transition-colors">
-                Messages
-              </Link>
-              <Link href="/profile" className="hover:text-gray-600 transition-colors">
-                Profile
-              </Link>
-              {!user ? <Link href="/login" className="hover:text-gray-600 transition-colors">Login</Link> : <></>}
-            </div>
-            <button className="md:hidden">
-              <Menu className="h-6 w-6" />
-            </button>
-          </div>
-        </nav>
+        <SiteNav isLoggedIn={!!user} />
 
         <main className="flex-1 max-w-5xl mx-auto px-4 py-8 w-full">{children}</main>
 
