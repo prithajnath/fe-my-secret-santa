@@ -2,24 +2,17 @@
 
 import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { signOut } from "@/lib/api"
 
 export function LogoutButton() {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleLogout() {
     setIsLoading(true)
-    try {
-      const response = await fetch("/api/logout", { method: "POST" })
-      if (response.ok) {
-        router.push("/")
-        router.refresh()
-      }
-    } catch {
-      setIsLoading(false)
-    }
+    await signOut()
+    // Full page load so every server-rendered part (nav, dashboard) drops the session
+    window.location.assign("/")
   }
 
   return (

@@ -441,6 +441,13 @@ export const issuesApi = {
   },
 }
 
+// Ends the session everywhere: the browser's tokens and the server's session cookies.
+// The /api/logout route also tells the backend.
+export async function signOut(): Promise<void> {
+  clearTokens()
+  await fetch("/api/logout", { method: "POST" }).catch(() => {})
+}
+
 // ==================== Legacy Exports (for backward compatibility) ====================
 export async function logout(): Promise<void> {
   return authApi.logout()
