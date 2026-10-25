@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Bug } from "lucide-react"
 import { getUser } from "@/lib/auth"
 import SiteNav from "@/components/site-nav"
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -50,6 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           </div>
         </footer>
+        <Analytics />
       </body>
     </html>
   )
