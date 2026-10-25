@@ -143,12 +143,14 @@ export interface MapMember {
   is_my_giftee: boolean
   location: MapLocation | null
   // Only present on the viewer's own entry
-  location_unavailable_reason?: "opted_out" | "no_verified_address" | null
+  location_unavailable_reason?: "opted_out" | "no_verified_address" | "outside_us" | null
 }
 
 export interface GroupMap {
   // The viewer's own opt-in for this group
   show_on_map: boolean
+  // True if anyone in the group has a non-US address (the map is US-only). Never says who.
+  has_non_us_members?: boolean
   members: MapMember[]
 }
 

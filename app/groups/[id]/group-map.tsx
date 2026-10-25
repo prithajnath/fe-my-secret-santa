@@ -5,7 +5,7 @@ import Link from "next/link"
 import type { Map as MapLibreMap, Marker } from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import { Card } from "@/components/ui/card"
-import { Loader2, Map as MapIcon, MapPinOff } from "lucide-react"
+import { Globe, Loader2, Map as MapIcon, MapPinOff } from "lucide-react"
 import { groupsApi } from "@/lib/api"
 import type { GroupMap as GroupMapData, MapMember } from "@/types"
 import { flySanta, prefersReducedMotion, type FlightStop } from "./santa-flight"
@@ -264,6 +264,8 @@ export default function GroupMap({ groupId }: { groupId: number }) {
   }
 
   const me = data?.members.find((m) => m.is_me)
+  // Opting in can't put a non-US member on the map, so the switch is disabled for them
+  const outsideUs = me?.location_unavailable_reason === "outside_us"
   const offMap = data?.members.filter((m) => !m.location && !m.is_me) ?? []
 
   return (
@@ -296,7 +298,8 @@ export default function GroupMap({ groupId }: { groupId: number }) {
                 aria-checked={data.show_on_map}
                 aria-labelledby="show-on-map-label"
                 onClick={toggle}
-                disabled={saving}
+                disabled={saving || outsideUs}
+                title={outsideUs ? "The map only supports US addresses" : undefined}
                 className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-60 ${
                   data.show_on_map ? "bg-black" : "bg-gray-300"
                 }`}
@@ -313,6 +316,14 @@ export default function GroupMap({ groupId }: { groupId: number }) {
           {me?.location_unavailable_reason === "opted_out" && (
             <p className="text-sm text-gray-600">
               You&apos;re not on the map. Turn on the switch above to show your nearest major city to this group.
+            </p>
+          )}
+          {(outsideUs || data?.has_non_us_members) && (
+            <p className="flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+              <Globe className="mt-0.5 h-4 w-4 flex-shrink-0" />
+              {outsideUs
+                ? "The map only supports US addresses, so you can't appear on it."
+                : "The map only supports US addresses, so members outside the US won't appear on it."}
             </p>
           )}
           {me?.location_unavailable_reason === "no_verified_address" && (
