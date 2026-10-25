@@ -3,8 +3,28 @@ import { Card } from "@/components/ui/card"
 import { ChevronRight, Lock, MessageCircle, Users } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { getUser } from "@/lib/auth"
+import HomeDashboard from "@/components/home-dashboard"
 
-export default function Home() {
+// Logged-in users get their dashboard; everyone else sees the landing page
+export default async function Home() {
+  const user = await getUser()
+  if (user) {
+    return (
+      <HomeDashboard
+        user={{
+          first_name: user.first_name,
+          hint: user.hint,
+          address: user.address,
+          address_verified: user.address_verified,
+        }}
+      />
+    )
+  }
+  return <LandingPage />
+}
+
+function LandingPage() {
   return (
     <div>
       <div className="space-y-12 md:space-y-16">

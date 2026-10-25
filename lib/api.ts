@@ -16,6 +16,7 @@ import type {
   AddressInput,
   AddressSuggestion,
   GroupMap,
+  InboxSummary,
 } from "@/types"
 import { apiErrorMessage } from "@/lib/utils"
 import { isExpiringSoon } from "@/lib/jwt"
@@ -379,6 +380,16 @@ export const messagesApi = {
       body: JSON.stringify({ message }),
     })
     return response.data
+  },
+
+  // Unread counts for the home dashboard. Returns null if the backend doesn't support it yet.
+  async getInbox(): Promise<InboxSummary | null> {
+    try {
+      const response = await baseFetch<InboxSummary>("/api/me/inbox")
+      return response.data
+    } catch {
+      return null
+    }
   },
 
   // Pair messages (anonymous santa/santee chat)

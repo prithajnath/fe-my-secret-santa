@@ -101,6 +101,11 @@ export interface GroupListItem {
   reveal_latest_pairs: boolean
   created_at: string
   member_avatars?: string[]
+  // Latest draw, or null if names haven't been drawn (absent on older backends)
+  pairs_drawn_at?: string | null
+  // Whether the viewer is part of the draw (absent on older backends)
+  participating?: boolean
+  draw_status?: "none" | "in_progress" | "done"
 }
 
 export interface GroupMember {
@@ -175,6 +180,12 @@ export interface PairMessage {
   text: string
   created_at: string
   direction: "sent" | "received"
+}
+
+// ==================== Inbox Types ====================
+export interface InboxSummary {
+  groups: { group_id: number; unread: number; last_message_at: string | null }[]
+  pairs: { channel_id: string; unread: number; last_message_at: string | null }[]
 }
 
 // ==================== Santa Types ====================
