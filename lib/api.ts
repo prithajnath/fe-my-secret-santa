@@ -15,6 +15,7 @@ import type {
   InviteAcceptResponse,
 } from "@/types"
 import { apiErrorMessage } from "@/lib/utils"
+import { isExpiringSoon } from "@/lib/jwt"
 
 // ==================== Configuration ====================
 // Use API proxy route to avoid CORS and handle self-signed certs
@@ -55,10 +56,15 @@ async function baseFetch<T>(endpoint: string, options: RequestInit = {}, require
   const headers = new Headers(options.headers)
   headers.set("Content-Type", "application/json")
 
+  let token: string | null = null
   if (requiresAuth) {
-    const token = getAccessToken()
+    token = getAccessToken()
     if (!token) {
       throw new Error("No authentication token found")
+    }
+    // Refresh ahead of expiry rather than waiting for a 401
+    if (isExpiringSoon(token) && (await refreshAccessToken())) {
+      token = getAccessToken()
     }
     headers.set("Authorization", `Bearer ${token}`)
   }
@@ -70,7 +76,8 @@ async function baseFetch<T>(endpoint: string, options: RequestInit = {}, require
 
   // Handle token refresh on 401
   if (response.status === 401 && requiresAuth) {
-    const refreshed = await refreshAccessToken()
+    // If another request already refreshed while this one was in flight, just retry with that token
+    const refreshed = getAccessToken() !== token || (await refreshAccessToken())
     if (refreshed) {
       headers.set("Authorization", `Bearer ${getAccessToken()}`)
       const retryResponse = await fetch(`${API_BASE}${endpoint}`, {
@@ -105,7 +112,17 @@ async function parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
   return data
 }
 
-async function refreshAccessToken(): Promise<boolean> {
+// Concurrent callers share one refresh request instead of each minting a new token
+let refreshInFlight: Promise<boolean> | null = null
+
+function refreshAccessToken(): Promise<boolean> {
+  refreshInFlight ??= requestNewAccessToken().finally(() => {
+    refreshInFlight = null
+  })
+  return refreshInFlight
+}
+
+async function requestNewAccessToken(): Promise<boolean> {
   const refreshToken = getRefreshToken()
   if (!refreshToken) return false
 

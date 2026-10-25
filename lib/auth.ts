@@ -4,75 +4,55 @@ import { redirect } from "next/navigation"
 import type { UserProfile } from "@/types"
 import { serverFetch } from "./server-fetch"
 import { apiErrorMessage, safeNextPath } from "./utils"
+import {
+  ACCESS_COOKIE,
+  ACCESS_MAX_AGE,
+  REFRESH_COOKIE,
+  REFRESH_MAX_AGE,
+  REFRESHED_COOKIE,
+  refreshAccessToken,
+  sessionCookie,
+} from "./session"
 
 const API_BASE = process.env.API_BASE_URL || "https://localhost:9100"
 
-// Set briefly after a successful refresh so a still-rejected token can't cause a redirect loop
-export const REFRESHED_COOKIE = "auth_refreshed"
 export const AUTH_MARKER_PARAM = "auth"
 
 // Pages that work logged out: a bad session there just renders as logged out, never redirects
 const PUBLIC_PATHS = ["/", "/login", "/register", "/forgot-password"]
 
-// Every set and delete uses the same attributes, so a delete always matches the cookie it targets
-function sessionCookie(maxAge: number) {
-  return {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
-    path: "/",
-    maxAge,
-  }
-}
-const ACCESS_MAX_AGE = 60 * 60 // 1 hour
-const REFRESH_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
-
 // Server-side auth utilities
 export async function getServerToken(): Promise<string | null> {
   const cookieStore = await cookies()
-  return cookieStore.get("access_token")?.value || null
+  return cookieStore.get(ACCESS_COOKIE)?.value || null
 }
 
 export async function setServerTokens(accessToken: string, refreshToken: string): Promise<void> {
   const cookieStore = await cookies()
-  cookieStore.set("access_token", accessToken, sessionCookie(ACCESS_MAX_AGE))
-  cookieStore.set("refresh_token", refreshToken, sessionCookie(REFRESH_MAX_AGE))
+  cookieStore.set(ACCESS_COOKIE, accessToken, sessionCookie(ACCESS_MAX_AGE))
+  cookieStore.set(REFRESH_COOKIE, refreshToken, sessionCookie(REFRESH_MAX_AGE))
 }
 
 export async function clearServerTokens(): Promise<void> {
   const cookieStore = await cookies()
-  for (const name of ["access_token", "refresh_token", REFRESHED_COOKIE]) {
+  for (const name of [ACCESS_COOKIE, REFRESH_COOKIE, REFRESHED_COOKIE]) {
     cookieStore.set(name, "", { ...sessionCookie(0), expires: new Date(0) })
   }
 }
 
 // Exchanges the refresh cookie for a new access token. Only callable from route handlers or
-// server actions, since it sets cookies.
+// server actions, since it sets cookies. Shares in-flight refreshes with proxy.ts.
 export async function refreshServerToken(): Promise<boolean> {
   const cookieStore = await cookies()
-  const refreshToken = cookieStore.get("refresh_token")?.value
+  const refreshToken = cookieStore.get(REFRESH_COOKIE)?.value
   if (!refreshToken) return false
 
-  try {
-    const response = await serverFetch(`${API_BASE}/api/auth/refresh`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${refreshToken}`,
-        "Content-Type": "application/json",
-      },
-    })
-    if (!response.ok) return false
+  const accessToken = await refreshAccessToken(refreshToken)
+  if (!accessToken) return false
 
-    const data = await response.json()
-    const accessToken = data?.data?.access_token
-    if (!data.success || !accessToken) return false
-
-    cookieStore.set("access_token", accessToken, sessionCookie(ACCESS_MAX_AGE))
-    cookieStore.set(REFRESHED_COOKIE, "1", sessionCookie(60))
-    return true
-  } catch {
-    return false
-  }
+  cookieStore.set(ACCESS_COOKIE, accessToken, sessionCookie(ACCESS_MAX_AGE))
+  cookieStore.set(REFRESHED_COOKIE, "1", sessionCookie(60))
+  return true
 }
 
 // Where to send a logged-out visitor so they land back on this page after signing in
@@ -109,8 +89,8 @@ async function fetchMe(token: string): Promise<MeResult> {
 // off to the /api/auth/refresh route handler, which refreshes once or clears the session.
 export const getUser = cache(async (): Promise<UserProfile | null> => {
   const cookieStore = await cookies()
-  const token = cookieStore.get("access_token")?.value
-  const hasRefreshToken = !!cookieStore.get("refresh_token")?.value
+  const token = cookieStore.get(ACCESS_COOKIE)?.value
+  const hasRefreshToken = !!cookieStore.get(REFRESH_COOKIE)?.value
   if (!token && !hasRefreshToken) return null
 
   if (token) {
