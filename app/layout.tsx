@@ -56,7 +56,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="max-w-5xl mx-auto px-4 py-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <p className="text-sm text-gray-600">
-                &copy; {new Date().getFullYear()} My Secret Santa. All rights reserved.
+                &copy; {new Date().getFullYear()} xerocopy LLC. All rights reserved.
               </p>
               <div className="flex items-center gap-6">
                 <Link

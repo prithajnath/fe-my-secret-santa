@@ -69,7 +69,7 @@ export default function Home() {
 
       <footer className="mt-12 md:mt-16 py-6 md:py-8 border-t border-black/5">
         <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <p className="text-sm text-gray-700 text-center md:text-left">© 2023 My Secret Santa. All rights reserved.</p>
+          <p className="text-sm text-gray-700 text-center md:text-left">&copy; {new Date().getFullYear()} xerocopy LLC. All rights reserved.</p>
           <a
             href="https://github.com/yourusername/my-secret-santa"
             target="_blank"
