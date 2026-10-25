@@ -30,8 +30,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${fraunces.variable} font-sans min-h-screen flex flex-col`}>
-        {/* Follows the OS setting by default; the nav toggle overrides it (stored in localStorage) */}
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        {/* Dark by default; the account menu's switch overrides it (stored in localStorage) */}
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           <SiteNav
             user={user && { first_name: user.first_name, last_name: user.last_name, avatar_url: user.avatar_url }}
           />
