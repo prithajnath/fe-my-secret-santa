@@ -26,6 +26,7 @@ import {
   Lightbulb,
 } from "lucide-react"
 import SecretSantaCard from "./secret-santa-card"
+import GroupMap from "./group-map"
 import { groupsApi, santaApi } from "@/lib/api"
 import type { GroupDetail as GroupDetailType, SantaRelationship, SanteeRelationship } from "@/types"
 
@@ -415,6 +416,8 @@ export default function GroupDetail({ groupId, currentUserId }: { groupId: numbe
           </Card>
         )}
       </div>
+
+      <GroupMap groupId={groupId} />
 
       <Card className="p-6 bg-white/50 border border-black/5">
         <h3 className="font-serif text-2xl mb-4">Members</h3>

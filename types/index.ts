@@ -122,6 +122,36 @@ export interface GroupDetail {
   members: GroupMember[]
 }
 
+// ==================== Map Types ====================
+export interface MapLocation {
+  lat: number
+  lon: number
+  // "approximate" is snapped to a ~5 km grid; only the viewer's own giftee is "exact"
+  precision: "approximate" | "exact"
+  // From the member's verified address; may be absent on older backends
+  city?: string
+  state?: string
+}
+
+export interface MapMember {
+  user_id: number
+  username: string
+  first_name: string
+  last_name: string
+  avatar_url?: string
+  is_me: boolean
+  is_my_giftee: boolean
+  location: MapLocation | null
+  // Only present on the viewer's own entry
+  location_unavailable_reason?: "opted_out" | "no_verified_address" | null
+}
+
+export interface GroupMap {
+  // The viewer's own opt-in for this group
+  show_on_map: boolean
+  members: MapMember[]
+}
+
 // ==================== Message Types ====================
 export interface MessageSender {
   id: number

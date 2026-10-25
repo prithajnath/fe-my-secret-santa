@@ -141,3 +141,12 @@ h6 {
   font-family: var(--font-serif);
   letter-spacing: -0.025em;
 }
+
+/* Santa flight on the group map (app/groups/[id]/santa-flight.ts) */
+@keyframes santa-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.santa-bob {
+  animation: santa-bob 0.8s ease-in-out infinite;
+}

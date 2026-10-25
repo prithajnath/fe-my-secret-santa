@@ -15,6 +15,7 @@ import type {
   InviteAcceptResponse,
   AddressInput,
   AddressSuggestion,
+  GroupMap,
 } from "@/types"
 import { apiErrorMessage } from "@/lib/utils"
 import { isExpiringSoon } from "@/lib/jwt"
@@ -334,6 +335,20 @@ export const groupsApi = {
   async createPairs(groupId: number): Promise<{ message: string }> {
     const response = await baseFetch<{ message: string }>(`/api/groups/${groupId}/pairs`, {
       method: "POST",
+    })
+    return response.data
+  },
+
+  async getMap(groupId: number): Promise<GroupMap> {
+    const response = await baseFetch<GroupMap>(`/api/groups/${groupId}/map`)
+    return response.data
+  },
+
+  // Per-group opt-in to appear (approximately) on the group's member map
+  async setShowOnMap(groupId: number, showOnMap: boolean): Promise<{ group_id: number; show_on_map: boolean }> {
+    const response = await baseFetch<{ group_id: number; show_on_map: boolean }>(`/api/groups/${groupId}/membership`, {
+      method: "PATCH",
+      body: JSON.stringify({ show_on_map: showOnMap }),
     })
     return response.data
   },
