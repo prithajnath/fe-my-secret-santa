@@ -26,14 +26,19 @@ export function formatBudget(budget: Budget): string {
 }
 
 // What the user typed in the amount field, as a budget. Empty means no budget.
-// Accepts "1,500", "$25", "25 USD", "25." and ".50".
+// Accepts "1,500", "$25", "25." and ".50".
 // Throws with a message for the form when the amount isn't valid
 export function parseBudgetInput(amount: string, currency: BudgetCurrency): Budget | null {
-  const cleaned = amount
-    .replace(/[\s,$£€₹]/g, "")
-    // Currency codes typed around the number, like "USD25", "CA$25" or "25usd"
-    .replace(/^[a-z]{1,3}|[a-z]{3}$/gi, "")
   if (!amount.trim()) return null
+
+  let cleaned = amount.replace(/[\s$£€₹]/g, "")
+  // Commas only as thousands separators. A decimal comma ("25,50") must not become 2550
+  if (cleaned.includes(",")) {
+    if (!/^\d{1,3}(,\d{3})+(\.\d*)?$/.test(cleaned)) {
+      throw new Error("Enter the budget as a number, like 25 or 25.50")
+    }
+    cleaned = cleaned.replace(/,/g, "")
+  }
 
   if (!/^(\d+(\.\d{0,2})?|\.\d{1,2})$/.test(cleaned)) {
     throw new Error("Enter the budget as a number, like 25 or 25.50")
