@@ -4,9 +4,10 @@ import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Users, Plus, Crown, Loader2 } from "lucide-react"
+import { Users, Plus, Crown, Loader2, Wallet } from "lucide-react"
 import Link from "next/link"
 import { groupsApi } from "@/lib/api"
+import { formatBudget } from "@/lib/budget"
 import type { GroupListItem } from "@/types"
 
 export default function GroupsList() {
@@ -90,6 +91,12 @@ export default function GroupsList() {
                   <Users className="h-4 w-4 text-gray-600" />
                   <span className="text-sm">{group.member_count} members</span>
                 </div>
+                {group.budget && (
+                  <div className="flex items-center gap-2">
+                    <Wallet className="h-4 w-4 text-gray-600" />
+                    <span className="text-sm">{formatBudget(group.budget)}</span>
+                  </div>
+                )}
                 {group.member_avatars && group.member_avatars.length > 0 && (
                   <div className="flex -space-x-2">
                     {group.member_avatars.slice(0, 4).map((avatar, i) => (

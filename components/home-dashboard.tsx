@@ -23,6 +23,7 @@ import {
   Users,
 } from "lucide-react"
 import { groupsApi, messagesApi, santaApi } from "@/lib/api"
+import { formatBudget } from "@/lib/budget"
 import type { GroupListItem, InboxSummary, SantaRelationship, SanteeRelationship } from "@/types"
 
 export interface DashboardUser {
@@ -106,6 +107,7 @@ function GifteeReveal({ santee }: { santee: SanteeRelationship }) {
       <div className="flex-1 min-w-0">
         <p className="text-xs text-red-800">You&apos;re buying for</p>
         <p className="font-medium truncate">{name}</p>
+        {santee.budget && <p className="text-xs text-red-800">Spend up to {formatBudget(santee.budget)}</p>}
       </div>
       <Link href={`/users/${santee.santee.username}`} className="text-xs font-medium text-red-800 underline flex-shrink-0">
         Hints &amp; address

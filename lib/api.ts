@@ -1,5 +1,6 @@
 import type {
   ApiResponse,
+  Budget,
   UserProfile,
   PublicUserProfile,
   LoginResponse,
@@ -303,10 +304,19 @@ export const groupsApi = {
     return response.data
   },
 
-  async create(name: string): Promise<GroupDetail> {
+  async create(name: string, budget: Budget | null = null): Promise<GroupDetail> {
     const response = await baseFetch<GroupDetail>("/api/groups", {
       method: "POST",
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, budget }),
+    })
+    return response.data
+  },
+
+  // Admin only. A null budget removes it
+  async update(groupId: number, changes: { budget: Budget | null }): Promise<GroupDetail> {
+    const response = await baseFetch<GroupDetail>(`/api/groups/${groupId}`, {
+      method: "PATCH",
+      body: JSON.stringify(changes),
     })
     return response.data
   },

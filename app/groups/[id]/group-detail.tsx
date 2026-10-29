@@ -24,11 +24,19 @@ import {
   MessageSquare,
   Gift,
   Lightbulb,
+  Wallet,
 } from "lucide-react"
 import SecretSantaCard from "./secret-santa-card"
 import GroupMap from "./group-map"
+import BudgetFields from "@/components/budget-fields"
 import { groupsApi, santaApi } from "@/lib/api"
-import type { GroupDetail as GroupDetailType, SantaRelationship, SanteeRelationship } from "@/types"
+import { budgetInputValue, DEFAULT_BUDGET_CURRENCY, formatBudget, parseBudgetInput } from "@/lib/budget"
+import type {
+  BudgetCurrency,
+  GroupDetail as GroupDetailType,
+  SantaRelationship,
+  SanteeRelationship,
+} from "@/types"
 
 const DRAW_POLL_INTERVAL_MS = 3000
 const DRAW_POLL_ATTEMPTS = 20
@@ -52,6 +60,9 @@ export default function GroupDetail({ groupId, currentUserId }: { groupId: numbe
   const [drawStatus, setDrawStatus] = useState<DrawStatus | null>(null)
   const [santee, setSantee] = useState<SanteeRelationship | null>(null)
   const [santa, setSanta] = useState<SantaRelationship | null>(null)
+  const [editingBudget, setEditingBudget] = useState(false)
+  const [budgetAmount, setBudgetAmount] = useState("")
+  const [budgetCurrency, setBudgetCurrency] = useState<BudgetCurrency>(DEFAULT_BUDGET_CURRENCY)
   const mounted = useRef(true)
 
   const isAdmin = group?.members.find((m) => m.user_id === currentUserId)?.is_admin || false
@@ -181,6 +192,37 @@ export default function GroupDetail({ groupId, currentUserId }: { groupId: numbe
     }
   }
 
+  const startEditingBudget = () => {
+    setBudgetAmount(budgetInputValue(group?.budget))
+    setBudgetCurrency(group?.budget?.currency ?? DEFAULT_BUDGET_CURRENCY)
+    setEditingBudget(true)
+  }
+
+  // An empty amount removes the budget
+  const handleSaveBudget = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+
+    let budget
+    try {
+      budget = parseBudgetInput(budgetAmount, budgetCurrency)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid budget")
+      return
+    }
+
+    setActionLoading("budget")
+    try {
+      const updated = await groupsApi.update(groupId, { budget })
+      setGroup((prev) => (prev ? { ...prev, budget: updated.budget ?? null } : prev))
+      setEditingBudget(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update budget")
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   const handleLeaveGroup = async () => {
     if (!confirm("Are you sure you want to leave this group?")) return
 
@@ -237,6 +279,12 @@ export default function GroupDetail({ groupId, currentUserId }: { groupId: numbe
             <Users className="h-4 w-4" />
             {group.member_count} members
           </span>
+          {group.budget && (
+            <span className="flex items-center gap-1">
+              <Wallet className="h-4 w-4" />
+              {formatBudget(group.budget)} budget
+            </span>
+          )}
           {group.reveal_latest_pairs ? (
             <span className="flex items-center gap-1 text-green-700">
               <Eye className="h-4 w-4" />
@@ -341,6 +389,12 @@ export default function GroupDetail({ groupId, currentUserId }: { groupId: numbe
                   <p className="text-sm text-gray-600">@{santee.santee.username}</p>
                 </div>
               </div>
+              {group.budget && (
+                <p className="text-sm text-red-800 flex items-center gap-1.5">
+                  <Wallet className="h-4 w-4" />
+                  Spend up to {formatBudget(group.budget)}
+                </p>
+              )}
               <div className="flex gap-2 mt-auto">
                 <Link href={`/users/${santee.santee.username}`} className="flex-1">
                   <Button className="w-full gap-2">
@@ -412,6 +466,41 @@ export default function GroupDetail({ groupId, currentUserId }: { groupId: numbe
                 )}
                 {group.reveal_latest_pairs ? "Hide Identities" : "Reveal Identities"}
               </Button>
+              {editingBudget ? (
+                <form onSubmit={handleSaveBudget} className="space-y-2 pt-2">
+                  <label htmlFor="group-budget" className="block text-sm font-medium">
+                    Gift budget
+                  </label>
+                  <BudgetFields
+                    id="group-budget"
+                    amount={budgetAmount}
+                    currency={budgetCurrency}
+                    onAmountChange={setBudgetAmount}
+                    onCurrencyChange={setBudgetCurrency}
+                    disabled={actionLoading === "budget"}
+                  />
+                  <p className="text-xs text-gray-500">Leave the amount empty for no budget</p>
+                  <div className="flex gap-2">
+                    <Button type="submit" className="flex-1" disabled={actionLoading === "budget"}>
+                      {actionLoading === "budget" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 bg-transparent"
+                      onClick={() => setEditingBudget(false)}
+                      disabled={actionLoading === "budget"}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <Button onClick={startEditingBudget} variant="outline" className="w-full gap-2 bg-transparent">
+                  <Wallet className="h-4 w-4" />
+                  {group.budget ? `Change Budget (${formatBudget(group.budget)})` : "Set Budget"}
+                </Button>
+              )}
             </div>
           </Card>
         )}
