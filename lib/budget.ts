@@ -26,19 +26,26 @@ export function formatBudget(budget: Budget): string {
 }
 
 // What the user typed in the amount field, as a budget. Empty means no budget.
+// Accepts "1,500", "$25", "25 USD", "25." and ".50".
 // Throws with a message for the form when the amount isn't valid
 export function parseBudgetInput(amount: string, currency: BudgetCurrency): Budget | null {
-  const trimmed = amount.trim()
-  if (!trimmed) return null
+  const cleaned = amount
+    .replace(/[\s,$£€₹]/g, "")
+    // Currency codes typed around the number, like "USD25", "CA$25" or "25usd"
+    .replace(/^[a-z]{1,3}|[a-z]{3}$/gi, "")
+  if (!amount.trim()) return null
 
-  if (!/^\d+(\.\d{1,2})?$/.test(trimmed)) {
+  if (!/^(\d+(\.\d{0,2})?|\.\d{1,2})$/.test(cleaned)) {
     throw new Error("Enter the budget as a number, like 25 or 25.50")
   }
-  const value = Number(trimmed)
-  if (value > MAX_BUDGET) {
+  const amountCents = Math.round(Number(cleaned) * 100)
+  if (amountCents < 1) {
+    throw new Error("The budget must be more than 0")
+  }
+  if (amountCents > MAX_BUDGET * 100) {
     throw new Error(`The budget can be at most ${MAX_BUDGET.toLocaleString()}`)
   }
-  return { amount_cents: Math.round(value * 100), currency }
+  return { amount_cents: amountCents, currency }
 }
 
 // A budget as the amount field's text: 2500 -> "25", 1250 -> "12.50"

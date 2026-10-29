@@ -94,7 +94,7 @@ export default function GroupsList() {
                 {group.budget && (
                   <div className="flex items-center gap-2">
                     <Wallet className="h-4 w-4 text-gray-600" />
-                    <span className="text-sm">{formatBudget(group.budget)}</span>
+                    <span className="text-sm">{formatBudget(group.budget)} budget</span>
                   </div>
                 )}
                 {group.member_avatars && group.member_avatars.length > 0 && (
