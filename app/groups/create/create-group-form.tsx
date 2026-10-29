@@ -7,11 +7,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
+import BudgetFields from "@/components/budget-fields"
 import { groupsApi } from "@/lib/api"
+import { DEFAULT_BUDGET_CURRENCY, parseBudgetInput } from "@/lib/budget"
+import type { BudgetCurrency } from "@/types"
 
 export default function CreateGroupForm() {
   const router = useRouter()
   const [name, setName] = useState("")
+  const [budgetAmount, setBudgetAmount] = useState("")
+  const [budgetCurrency, setBudgetCurrency] = useState<BudgetCurrency>(DEFAULT_BUDGET_CURRENCY)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -24,10 +29,18 @@ export default function CreateGroupForm() {
       return
     }
 
+    let budget
+    try {
+      budget = parseBudgetInput(budgetAmount, budgetCurrency)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid budget")
+      return
+    }
+
     setLoading(true)
 
     try {
-      const group = await groupsApi.create(name.trim())
+      const group = await groupsApi.create(name.trim(), budget)
       router.push(`/groups/${group.id}`)
       router.refresh()
     } catch (err) {
@@ -60,6 +73,20 @@ export default function CreateGroupForm() {
           required
         />
         <p className="text-xs text-gray-500">Choose a memorable name for your group</p>
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="budget" className="block text-sm font-medium">
+          Gift Budget <span className="font-normal text-gray-500">(optional)</span>
+        </label>
+        <BudgetFields
+          id="budget"
+          amount={budgetAmount}
+          currency={budgetCurrency}
+          onAmountChange={setBudgetAmount}
+          onCurrencyChange={setBudgetCurrency}
+        />
+        <p className="text-xs text-gray-500">How much each person should spend. You can change it later</p>
       </div>
 
       <Button type="submit" className="w-full" disabled={loading}>

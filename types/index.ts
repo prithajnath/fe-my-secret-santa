@@ -93,6 +93,14 @@ export interface OAuthResponse extends AuthTokens {
 }
 
 // ==================== Group Types ====================
+export type BudgetCurrency = "USD" | "CAD" | "GBP" | "EUR" | "INR" | "AUD"
+
+// Spending limit per gift. amount_cents is in the currency's minor unit (cents, pence, paise)
+export interface Budget {
+  amount_cents: number
+  currency: BudgetCurrency
+}
+
 export interface GroupListItem {
   id: number
   name: string
@@ -101,6 +109,8 @@ export interface GroupListItem {
   reveal_latest_pairs: boolean
   created_at: string
   member_avatars?: string[]
+  // null when the group has no budget (absent on older backends)
+  budget?: Budget | null
   // Latest draw, or null if names haven't been drawn (absent on older backends)
   pairs_drawn_at?: string | null
   // Whether the viewer is part of the draw (absent on older backends)
@@ -125,6 +135,8 @@ export interface GroupDetail {
   reveal_latest_pairs: boolean
   created_at: string
   members: GroupMember[]
+  // null when the group has no budget (absent on older backends)
+  budget?: Budget | null
 }
 
 // ==================== Map Types ====================
@@ -194,12 +206,14 @@ export interface SantaRelationship {
   group_id: number
   group_name: string
   reveal_enabled?: boolean
+  budget?: Budget | null
 }
 
 export interface SanteeRelationship {
   channel_id: string
   group_id: number
   group_name: string
+  budget?: Budget | null
   santee: {
     username: string
     first_name: string
