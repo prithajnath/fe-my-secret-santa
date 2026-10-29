@@ -32,6 +32,7 @@ import BudgetFields from "@/components/budget-fields"
 import { groupsApi, santaApi } from "@/lib/api"
 import { budgetInputValue, DEFAULT_BUDGET_CURRENCY, formatBudget, parseBudgetInput } from "@/lib/budget"
 import type {
+  Budget,
   BudgetCurrency,
   GroupDetail as GroupDetailType,
   SantaRelationship,
@@ -63,6 +64,8 @@ export default function GroupDetail({ groupId, currentUserId }: { groupId: numbe
   const [editingBudget, setEditingBudget] = useState(false)
   const [budgetAmount, setBudgetAmount] = useState("")
   const [budgetCurrency, setBudgetCurrency] = useState<BudgetCurrency>(DEFAULT_BUDGET_CURRENCY)
+  // Shown inside the budget form, since the page's error card can be off-screen on mobile
+  const [budgetError, setBudgetError] = useState("")
   const mounted = useRef(true)
 
   const isAdmin = group?.members.find((m) => m.user_id === currentUserId)?.is_admin || false
@@ -195,19 +198,25 @@ export default function GroupDetail({ groupId, currentUserId }: { groupId: numbe
   const startEditingBudget = () => {
     setBudgetAmount(budgetInputValue(group?.budget))
     setBudgetCurrency(group?.budget?.currency ?? DEFAULT_BUDGET_CURRENCY)
+    setBudgetError("")
     setEditingBudget(true)
+  }
+
+  const cancelEditingBudget = () => {
+    setBudgetError("")
+    setEditingBudget(false)
   }
 
   // An empty amount removes the budget
   const handleSaveBudget = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
+    setBudgetError("")
 
-    let budget
+    let budget: Budget | null
     try {
       budget = parseBudgetInput(budgetAmount, budgetCurrency)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid budget")
+      setBudgetError(err instanceof Error ? err.message : "Invalid budget")
       return
     }
 
@@ -217,7 +226,7 @@ export default function GroupDetail({ groupId, currentUserId }: { groupId: numbe
       setGroup((prev) => (prev ? { ...prev, budget: updated.budget ?? null } : prev))
       setEditingBudget(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update budget")
+      setBudgetError(err instanceof Error ? err.message : "Failed to update budget")
     } finally {
       setActionLoading(null)
     }
@@ -479,7 +488,14 @@ export default function GroupDetail({ groupId, currentUserId }: { groupId: numbe
                     onCurrencyChange={setBudgetCurrency}
                     disabled={actionLoading === "budget"}
                   />
-                  <p className="text-xs text-gray-500">Leave the amount empty for no budget</p>
+                  {budgetError ? (
+                    <p className="text-sm text-red-700 flex items-center gap-1.5" role="alert">
+                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                      {budgetError}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-500">Leave the amount empty for no budget</p>
+                  )}
                   <div className="flex gap-2">
                     <Button type="submit" className="flex-1" disabled={actionLoading === "budget"}>
                       {actionLoading === "budget" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
@@ -488,7 +504,7 @@ export default function GroupDetail({ groupId, currentUserId }: { groupId: numbe
                       type="button"
                       variant="outline"
                       className="flex-1 bg-transparent"
-                      onClick={() => setEditingBudget(false)}
+                      onClick={cancelEditingBudget}
                       disabled={actionLoading === "budget"}
                     >
                       Cancel

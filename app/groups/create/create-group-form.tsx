@@ -10,7 +10,7 @@ import { AlertCircle } from "lucide-react"
 import BudgetFields from "@/components/budget-fields"
 import { groupsApi } from "@/lib/api"
 import { DEFAULT_BUDGET_CURRENCY, parseBudgetInput } from "@/lib/budget"
-import type { BudgetCurrency } from "@/types"
+import type { Budget, BudgetCurrency } from "@/types"
 
 export default function CreateGroupForm() {
   const router = useRouter()
@@ -29,7 +29,7 @@ export default function CreateGroupForm() {
       return
     }
 
-    let budget
+    let budget: Budget | null
     try {
       budget = parseBudgetInput(budgetAmount, budgetCurrency)
     } catch (err) {

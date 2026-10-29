@@ -36,7 +36,7 @@ export default function BudgetFields({
         value={currency}
         onChange={(e) => onCurrencyChange(e.target.value as BudgetCurrency)}
         disabled={disabled}
-        className="border-input h-9 rounded-md border bg-transparent px-2 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+        className="border-input dark:bg-input/30 h-9 rounded-md border bg-transparent px-2 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
       >
         {BUDGET_CURRENCIES.map(({ code, label }) => (
           <option key={code} value={code}>
